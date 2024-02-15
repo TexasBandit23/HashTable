@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <cstring>
 #include "Node.h"
@@ -12,22 +11,21 @@
 using namespace std;
 
 void rehash(Node* tempNode, Node ** &hash, Node ** & newHash, int index, bool &rehash);
-void add(int Id, float GPA, char first[30], char last[30], int &size, Node** &hash);
-void remove(Node* &head, Node* current, Node* prev, int deleteID);
-void hash(int &size, int currentsize, Node** &hash, bool &rehash);
+void add(int ID, float GPA, char first[30], char last[30], int &size, Node** &hash);
+void print(Node ** hash, int &size);
+void hashCall(int &size, int currentsize, Node** &hash, bool &rehash);
 
 int main(){
   Node* head = NULL;
   bool running = true;
 
-
-  int size = 100;
   Node** hash = new Node* [100];
+  int size = 100;
   for(int i = 0; i < 100; i++){
     hash[i] = NULL;
-    
   }
-
+  
+//while loop where code runs
   while (running == true){
     cout << "Enter 'ADD', 'PRINT', 'DELETE', or 'QUIT'" << endl;
     char input[15];
@@ -36,21 +34,23 @@ int main(){
     }
     cin.get(input, 15);
     cin.ignore(15, '\n');
+    //if statements that determine what happens based on which function is called.
     if(strcmp(input, "ADD") == 0){
+      //collecting information from the user about the student
       int ID;
       float GPA;
       char first[30];
       char last[30];
-      cout << "First name? " << endl;
+      cout << "What is the student's first name? " << endl;
       cin.get(first, 30);
       cin.get();
-      cout << "Last name? " << endl;
+      cout << "What is the student's last name? " << endl;
       cin.get(last, 30);
       cin.get();
-      cout << "ID? " << endl;
+      cout << "What is the student's ID? " << endl;
       cin >> ID;
       cin.get();
-      cout << "GPA? " << endl;
+      cout << "What is the student's GPA? " << endl;
       cin >> GPA;
       cin.get();
       
@@ -58,28 +58,19 @@ int main(){
 
     }
     if(strcmp(input, "PRINT") == 0){
-      //call print
+      print(hash, size);
     }
     if(strcmp(input, "QUIT") == 0){
-      stillRunning = false;
+      running = false;
     }
     if(strcmp(input, "DELETE") == 0){
-      cout << "What ID would you like to delete?" << endl;
-  
-      int deleted;
-      cin >> deleted;
-      cin.get();
-      int index = deleted % size;
-      
-      remove(hash[index], hash[index], hash[index], deleted);
+      //delete function to be implemented
     }
   }
   return 0;
 }
 
-
 void add(int ID, float GPA, char first[30], char last[30], int &size, Node** &hash){
-
   student* newstudent = new student();
 
   newstudent->setID(ID);
@@ -87,15 +78,12 @@ void add(int ID, float GPA, char first[30], char last[30], int &size, Node** &ha
   strcpy(newstudent->last, last);
   
   newstudent->setGPA(GPA);
-
   
   Node* tempNode = new Node();
   tempNode->setStudent(newstudent);
   
-  
   int index = newstudent->getId() % size;
 
-  
   if(hash[index] == NULL){
     hash[index] = tempNode;
   }
@@ -107,10 +95,10 @@ void add(int ID, float GPA, char first[30], char last[30], int &size, Node** &ha
   }
   else{
     bool rehash = true;
-    
+   
     hash[index]->getNext()->getNext()->setNext(tempNode);
     while(rehash == true){
-      hashFunction(size, size*2, hash, rehash);
+      hashCall(size, size*2, hash, rehash);
     }
 
   }
@@ -118,8 +106,7 @@ void add(int ID, float GPA, char first[30], char last[30], int &size, Node** &ha
   return;
 }
 
-
-void hash(int &size, int currentsize, Node** &hash, bool &rehash){
+void hashCall(int &size, int currentsize, Node** &hash, bool &rehash){
   
   rehash = false;
   
@@ -136,31 +123,39 @@ void hash(int &size, int currentsize, Node** &hash, bool &rehash){
     Node* secondTempNode = NULL;
     Node* thirdTempNode = NULL;
     Node* fourthTempNode = NULL;
+    if(tempNode->getNext() != NULL){
+      secondTempNode = tempNode->getNext();
+      if(tempNode->getNext()->getNext() != NULL){
+        thirdTempNode = tempNode->getNext()->getNext();
+        if(tempNode->getNext()->getNext()->getNext() != NULL){
+          fourthTempNode = tempNode->getNext()->getNext()->getNext();
+        }
+      }
+    }
     
     int index;
     if(fourthTempNode != NULL){
       index = fourthTempNode->getStudent()->getId() % currentsize;
-      rehashMechanics(fourthTempNode, hash, newHash, index, rehash);
+      rehash(fourthTempNode, hash, newHash, index, rehash);
       tempNode->getNext()->getNext()->setNext(NULL);
     }
     if(thirdTempNode != NULL){
       index = thirdTempNode->getStudent()->getId() % currentsize;
-      rehashMechanics(thirdTempNode, hash, newHash, index, rehash);
+      rehash(thirdTempNode, hash, newHash, index, rehash);
       tempNode->getNext()->setNext(NULL);
     }
     if(secondTempNode != NULL){
       index = secondTempNode->getStudent()->getId() % currentsize;
-      rehashMechanics(secondTempNode, hash, newHash, index, rehash);
+      rehash(secondTempNode, hash, newHash, index, rehash);
       tempNode->setNext(NULL);
     }
     if(tempNode != NULL){
       index = tempNode->getStudent()->getId() % currentsize;
-      rehashMechanics(tempNode, hash, newHash, index, rehash);
+      rehash(tempNode, hash, newHash, index, rehash);
     }
     
 
   }
- 
   size = size * 2;
   delete [] hash;
   hash = newHash;
@@ -168,10 +163,8 @@ void hash(int &size, int currentsize, Node** &hash, bool &rehash){
 
 }
 
-
 void rehash(Node* tempNode, Node ** &hash, Node ** & newHash, int index, bool &rehash){
   int iterator = 0;
-  
   if(newHash[index] == NULL){
     newHash[index] = tempNode;
   }
@@ -182,7 +175,7 @@ void rehash(Node* tempNode, Node ** &hash, Node ** & newHash, int index, bool &r
       finalNode = finalNode->getNext();
       iterator++;
     }
-    if(iterator == 4){
+    if(iterator == 3){
       rehash = true;
     }
     finalNode->setNext(tempNode);
@@ -192,36 +185,21 @@ void rehash(Node* tempNode, Node ** &hash, Node ** & newHash, int index, bool &r
 
 }
 
+void print(Node ** hash, int &size){
+  for(int i = 0; i < size; i++){
+    if(hash[i] != NULL){
+      cout << hash[i]->getStudent()->print() << endl;
+      if(hash[i]->getNext() != NULL){
+        cout << hash[i]->getNext()->getStudent()->print() << endl;
+        if(hash[i]->getNext()->getNext()!=NULL){
+          cout << hash[i]->getNext()->getNext()->getStudent()->print() << endl;
+        }
 
-void remove(Node* &head, Node* current, Node* prev, int deleteID){
-  
-  if(head == NULL){
-    return;
+      }
+
+
+   }
   }
-  
-  else{
-   
-    if(current->getStudent()->getId() == deleteID){
-      if(current == head){
-        Node* tempNode = current->getNext();
-        delete head;
-        head = tempNode;
-      }
-      else{
-        prev->setNext(current->getNext());
-        delete current;
-      }
-    }
-    
-    else{
-      if(current->getNext()!= NULL){
-        remove(head, current->getNext(), current, deleteID);
-      }
-      else{
-        return;
-      }
-      return;
-    }
-  }
+  return;
+
 }
-

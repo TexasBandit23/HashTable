@@ -5,6 +5,7 @@ function that executed each time the functions were called. These print function
 commented them out. 
 */
 
+
 #include <iostream>
 #include "node.h"
 #include <cstring>

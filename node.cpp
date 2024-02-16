@@ -45,6 +45,3 @@ Student* Node::getStudent() {
   return student; 
 }
 
-void Node :: setStudent(student* newstudent){
-  student = newstudent
-}

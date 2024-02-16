@@ -17,7 +17,6 @@ public:
   Node* getNext();
   void setNext(Node* nextNode); 
   Student* getStudent();
-  void setStudent(student* newstudent);
 protected: //I am assuming protected is the same thing as private
   //private variables used in node.cpp
   Node* next;

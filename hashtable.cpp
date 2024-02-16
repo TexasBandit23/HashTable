@@ -1,205 +1,225 @@
-#include <iostream>
+#include <cctype>
 #include <cstring>
-#include "Node.h"
-#include "student.h"
 #include <iomanip>
+#include <iostream>
+#include <vector>
+#include "node.h"
+#include "student.h"
 #include <array>
 #include <fstream>
 #include <cstdlib>
 #include <time.h>
-#include <vector>
+
 using namespace std;
 
-void rehash(Node* tempNode, Node ** &hash, Node ** & newHash, int index, bool &rehash);
-void add(int ID, float GPA, char first[30], char last[30], int &size, Node** &hash);
-void print(Node ** hash, int &size);
-void hashCall(int &size, int currentsize, Node** &hash, bool &rehash);
+// Function prototypes
+void print(Node** &hash, int &size);
+void add(Student* student, int &size, Node** &hash);
+void remove(Node** &hash, int &size, int removeID);
+void hashFunction(int size, Node** &hash, bool &needRehash);
+void rehashFunction(Node** &hash, int &size);
 
-int main(){
-  Node* head = NULL;
-  bool running = true;
-
-  Node** hash = new Node* [100];
-  int size = 100;
-  for(int i = 0; i < 100; i++){
-    hash[i] = NULL;
-  }
-  
-//while loop where code runs
-  while (running == true){
-    cout << "Enter 'ADD', 'PRINT', 'DELETE', or 'QUIT'" << endl;
-    char input[15];
-    for(int i = 0; i < 7; i++){
-      input[i] = '\0';
-    }
-    cin.get(input, 15);
-    cin.ignore(15, '\n');
-    //if statements that determine what happens based on which function is called.
-    if(strcmp(input, "ADD") == 0){
-      //collecting information from the user about the student
-      int ID;
-      float GPA;
-      char first[30];
-      char last[30];
-      cout << "What is the student's first name? " << endl;
-      cin.get(first, 30);
-      cin.get();
-      cout << "What is the student's last name? " << endl;
-      cin.get(last, 30);
-      cin.get();
-      cout << "What is the student's ID? " << endl;
-      cin >> ID;
-      cin.get();
-      cout << "What is the student's GPA? " << endl;
-      cin >> GPA;
-      cin.get();
-      
-      add(ID, GPA, first, last, size, hash);
-
-    }
-    if(strcmp(input, "PRINT") == 0){
-      print(hash, size);
-    }
-    if(strcmp(input, "QUIT") == 0){
-      running = false;
-    }
-    if(strcmp(input, "DELETE") == 0){
-      //delete function to be implemented
-    }
-  }
-  return 0;
-}
-
-void add(int ID, float GPA, char first[30], char last[30], int &size, Node** &hash){
-  student* newstudent = new student();
-
-  newstudent->setID(ID);
-  strcpy(newstudent->first, first);
-  strcpy(newstudent->last, last);
-  
-  newstudent->setGPA(GPA);
-  
-  Node* tempNode = new Node();
-  tempNode->setStudent(newstudent);
-  
-  int index = newstudent->getId() % size;
-
-  if(hash[index] == NULL){
-    hash[index] = tempNode;
-  }
-  else if(hash[index]->getNext() == NULL){
-    hash[index]->setNext(tempNode);
-  }
-  else if(hash[index]->getNext()->getNext()==NULL){
-    hash[index]->getNext()->setNext(tempNode);
-  }
-  else{
-    bool rehash = true;
-   
-    hash[index]->getNext()->getNext()->setNext(tempNode);
-    while(rehash == true){
-      hashCall(size, size*2, hash, rehash);
-    }
-
-  }
-
-  return;
-}
-
-void hashCall(int &size, int currentsize, Node** &hash, bool &rehash){
-  
-  rehash = false;
-  
-  Node** newHash = new Node*[currentsize];
-  for(int i = 0; i < currentsize; i++){
-    newHash[i] = NULL;
-
-  }
-
-  
-  for(int i = 0; i < size; i++){
+int main() {
+    char input[81];
+    bool stillRunning = true;
+    Node* head = nullptr; // Initializing head pointer to nullptr
     
-    Node* tempNode = hash[i];
-    Node* secondTempNode = NULL;
-    Node* thirdTempNode = NULL;
-    Node* fourthTempNode = NULL;
-    if(tempNode->getNext() != NULL){
-      secondTempNode = tempNode->getNext();
-      if(tempNode->getNext()->getNext() != NULL){
-        thirdTempNode = tempNode->getNext()->getNext();
-        if(tempNode->getNext()->getNext()->getNext() != NULL){
-          fourthTempNode = tempNode->getNext()->getNext()->getNext();
+    Node** hash = new Node* [100];
+    for (int i = 0; i < 100; i++) {
+        hash[i] = nullptr;
+    }
+  
+    bool needRehash = false; // Initializing rehashNeeded variable
+    int size = 100;
+    
+    cout << "This is student list using a Hash Table" << endl;
+
+    // Main program loop
+    while (stillRunning == true) { 
+
+        // Takes in commands
+        cout << "Type in a command: ADD, PRINT, DELETE, RANDOM, or QUIT" << endl;
+        cin.get(input, 81);
+        cin.ignore(81, '\n');
+
+	// PRINT
+        if (strcmp(input, "PRINT") == 0) {
+            cout << "Printing...: " << endl;
+            print(hash, size);
         }
-      }
-    }
-    
-    int index;
-    if(fourthTempNode != NULL){
-      index = fourthTempNode->getStudent()->getId() % currentsize;
-      rehash(fourthTempNode, hash, newHash, index, rehash);
-      tempNode->getNext()->getNext()->setNext(NULL);
-    }
-    if(thirdTempNode != NULL){
-      index = thirdTempNode->getStudent()->getId() % currentsize;
-      rehash(thirdTempNode, hash, newHash, index, rehash);
-      tempNode->getNext()->setNext(NULL);
-    }
-    if(secondTempNode != NULL){
-      index = secondTempNode->getStudent()->getId() % currentsize;
-      rehash(secondTempNode, hash, newHash, index, rehash);
-      tempNode->setNext(NULL);
-    }
-    if(tempNode != NULL){
-      index = tempNode->getStudent()->getId() % currentsize;
-      rehash(tempNode, hash, newHash, index, rehash);
-    }
-    
+	
+        // ADD
+        else if (strcmp(input, "ADD") == 0) {
+            Student* student = new Student();
+            
+            //Takes in information
+            cout << "First Name: " << endl;
+            char firstName[81];
+            cin.get(firstName, 81);
+            cin.ignore(81, '\n');
+            strcpy(student->getFirst(), firstName);
+            
+            cout << "Last Name: " << endl;
+	    char lastName[81];
+            cin.get(lastName, 81);
+            cin.ignore(81, '\n');
+            strcpy(student->getLast(), lastName);
+            
+            cout << "Student ID: " << endl;
+            int ID;
+            cin >> ID;
+            cin.ignore(81, '\n');
+            student->setID(ID);
+            
+            cout << "Student GPA: " << endl;
+            float GPA;
+            cin >> GPA;
+            cin.ignore(81, '\n');
+            student->setGPA(GPA);
 
-  }
-  size = size * 2;
-  delete [] hash;
-  hash = newHash;
-  return;
-
-}
-
-void rehash(Node* tempNode, Node ** &hash, Node ** & newHash, int index, bool &rehash){
-  int iterator = 0;
-  if(newHash[index] == NULL){
-    newHash[index] = tempNode;
-  }
-  
-  else{
-    Node* finalNode = newHash[index];
-    while(finalNode->getNext() != NULL){
-      finalNode = finalNode->getNext();
-      iterator++;
-    }
-    if(iterator == 3){
-      rehash = true;
-    }
-    finalNode->setNext(tempNode);
-  }
-  tempNode->setNext(NULL);
-
-
-}
-
-void print(Node ** hash, int &size){
-  for(int i = 0; i < size; i++){
-    if(hash[i] != NULL){
-      cout << hash[i]->getStudent()->print() << endl;
-      if(hash[i]->getNext() != NULL){
-        cout << hash[i]->getNext()->getStudent()->print() << endl;
-        if(hash[i]->getNext()->getNext()!=NULL){
-          cout << hash[i]->getNext()->getNext()->getStudent()->print() << endl;
+            add(student, size, hash);
+            
+            // Check if rehashing is needed after adding or deleting
+            hashFunction(size, hash, needRehash);
+            
+            if (needRehash == true) {
+                rehashFunction(hash, size);
+                needRehash = false;
+            }
         }
 
-      }
+        // DELETE
+        else if (strcmp(input, "DELETE") == 0) {
+            cout << "What ID would you like to delete?" << endl;
+
+            int removeID;
+            cin >> removeID;
+            cin.get();
+
+            remove(hash, size, removeID);
+            
+            // Check if rehashing is needed after adding or deleting
+            hashFunction(size, hash, needRehash);
+            if (needRehash == true) {
+                rehashFunction(hash, size);
+                needRehash = false;
+            }
+        }
+        
+        else if (strcmp(input, "RANDOM") == 0) {
+            
+        }
 
 
-   }
+
+        // QUIT
+        else if (strcmp(input, "QUIT") == 0) {
+            cout << "Bye..." << endl;
+            stillRunning = false;
+        }
+    }
+
+}
+
+void add(Student* student, int &size, Node** &hash) {
+  Node* node = new Node(student);
+  int value = student->getID() % size;
+
+  // Chaining
+  if (hash[value] == nullptr) {
+      hash[value] = node;
+  } else {
+      node->setNext(hash[value]);
+      hash[value] = node;
   }
-  return;
 
+  cout << "Added..." << endl;
+}
+
+void remove(Node** &hash, int &size, int removeID) {
+    int value = removeID % size;
+    Node* previousNode = nullptr;
+    Node* currentNode = hash[value];
+
+    while (currentNode != nullptr) {
+        if (currentNode->getStudent()->getID() == removeID) {
+            if (previousNode == nullptr) {
+                hash[value] = currentNode->getNext();
+            } else {
+                previousNode->setNext(currentNode->getNext());
+            }
+            delete currentNode;
+            cout << "Deleted...." << endl;
+            return;
+        }
+        previousNode = currentNode;
+        currentNode = currentNode->getNext();
+    }
+
+    cout << "ID: " << removeID << " not found." << endl;
+}
+
+// Print
+void print(Node** &hash, int &size) {
+    for (int i = 0; i < size; i++) {
+        Node* currentNode = hash[i];
+        while (currentNode != nullptr) {
+            currentNode->getStudent()->print();
+            currentNode = currentNode->getNext();
+        }
+    }
+}
+
+
+void hashFunction(int size, Node** &hash, bool &needRehash) {
+    int currentNumberOfLinks = 0;
+    int maximumNumberOfLinks = 3;
+
+    // Calculate total collisions
+    for (int i = 0; i < size; ++i) {
+        Node* currentNode = hash[i];
+        while (currentNode != nullptr) {
+            currentNode = currentNode->getNext();
+	    currentNumberOfLinks++;
+        }
+	if (currentNumberOfLinks > maximumNumberOfLinks) {
+	  needRehash = true;
+	}
+	currentNumberOfLinks = 0;
+    }
+}
+
+void rehashFunction(Node** &hash, int &size) {
+    int doubleSize = size * 2;
+    Node** doubleHash = new Node*[doubleSize];
+    
+    // New hash table
+    for (int i = 0; i < doubleSize; ++i) {
+        doubleHash[i] = nullptr;
+    }
+    
+    // Rehash
+    for (int i = 0; i < size; ++i) {
+        Node* currentNode = hash[i];
+        while (currentNode != nullptr) {
+            Node* nextNode = currentNode->getNext();
+            int value = currentNode->getStudent()->getID() % doubleSize;
+            
+            if (doubleHash[value] == nullptr) {
+                doubleHash[value] = currentNode;
+                currentNode->setNext(nullptr);
+            } else {
+                currentNode->setNext(doubleHash[value]);
+                doubleHash[value] = currentNode;
+            }
+            currentNode = nextNode;
+        }
+    }
+       
+    // Update variables
+    delete[] hash;
+    hash = doubleHash;
+    size = doubleSize;
+
+    cout << "Hash table rehashed. New size: " << doubleSize << endl;
 }

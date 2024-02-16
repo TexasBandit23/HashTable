@@ -18,13 +18,17 @@ public:
   float getGPA();
   void setGPA(float nextGPA);
   void print(); //prints out a student and all of their data
-
+  void setFirst(char tempFirst[]);
+  void setLast(char tempLast[]);
+  
 private:
   //variables are all private
   char first[81];
   char last[81];
   int ID;
   float GPA;
+  char tempFirst[81];
+  char tempLast[81];
 };
 
 #endif

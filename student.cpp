@@ -49,3 +49,12 @@ void Student::setGPA(float nextGPA) {
 void Student::print() {
   cout << first << " " << last << ", " << ID << ", " << fixed << setprecision(2) << GPA << endl;
 }
+void Student::setFirst(char tempFirst[]) {
+    strncpy(first, tempFirst, sizeof(first) - 1);
+    first[sizeof(first) - 1] = '\0';
+}
+
+void Student::setLast(char tempLast[]) {
+    strncpy(last, tempLast, sizeof(last) - 1);
+    last[sizeof(last) - 1] = '\0';
+}
